@@ -112,21 +112,14 @@ void delay_us( uint16_t useconds );
 #endif
 
 /** Timer module **/
-
-typedef uint32_t TimerTicks32_t;
-typedef uint16_t TimerTicks16_t;
-
-// timer_start, timer_restart, timer_stop - divider = 1
 void timer_start();
 void timer_restart();
 void timer_stop();
 uint32_t timer_get_us ();
 uint32_t timer_get_ms ();
 
-#define TIMER_DIV_1   0b00
-#define TIMER_DIV_8   0b01
-#define TIMER_DIV_64  0b10
-#define TIMER_DIV_256 0b11
+void timer_set_timeout( uint16_t mseconds );
+bool timer_is_timeout( void );
 
 /** Input capture module **/
 

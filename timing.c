@@ -1,6 +1,14 @@
 #include "per_proto.h"
 #include <libpic30.h>
 
+typedef uint32_t TimerTicks32_t;
+typedef uint16_t TimerTicks16_t;
+
+#define TIMER_DIV_1   0b00
+#define TIMER_DIV_8   0b01
+#define TIMER_DIV_64  0b10
+#define TIMER_DIV_256 0b11
+
 void setup_PLL_oscillator( void )
 {
     PLLFBDbits.PLLDIV = 38; // M=40 Fvco = 160Mhz
@@ -52,8 +60,39 @@ void delay_us( uint16_t useconds )
 
 static const float timer_tick_2_ms = 1000.0/FCY;
 static const float timer_tick_2_us = 1000000.0/FCY;
+static const float timer_ms_2_tick = FCY/1000.0;
 
-TimerTicks32_t  timer_ticks     = 0;
+TimerTicks32_t  timer_ticks      = 0;
+volatile  bool  timeout_happened = true;
+
+void timer_set_timeout( uint16_t mseconds )
+{
+    TimerTicks32_t timeout_ticks = mseconds * timer_ms_2_tick;
+    timeout_happened = false;
+    
+    T8CONbits.TON   = 0;
+    T8CONbits.T32   = 1;
+    T8CONbits.TCKPS = TIMER_DIV_1;
+    _T9IP           = INT_PRIO_HIGHEST;
+    _T9IE           = 1;
+    _T9IF           = 0;
+    
+    PR9 = timeout_ticks >> 16;
+    PR8 = timeout_ticks;
+    T8CONbits.TON   = 1;
+}
+
+bool timer_is_timeout( void )
+{
+    return timeout_happened;
+}
+
+void __attribute__( (__interrupt__, no_auto_psv) ) _T9Interrupt()
+{
+    timeout_happened = true;
+    _T9IE            = 0;
+    _T9IF            = 0;
+}
 
 // Timer (divider = 1, period = MAX, FCY = 16MHz) counts up to 268 sec
 void timer_start()
@@ -81,7 +120,7 @@ void timer_restart()
 
 uint32_t timer_get_ms ()
 {
-    return( timer_ticks  * timer_tick_2_ms );
+    return( timer_ticks * timer_tick_2_ms );
 }
 
 uint32_t timer_get_us ()

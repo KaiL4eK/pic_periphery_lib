@@ -49,14 +49,14 @@ typedef struct
 
 volatile UART_module_fd  uart_fd[] = {  {   .initialized = false,
                                             .write_big_endian_mode = false, .i_write_head_byte = 0, .i_write_tail_byte = 0, .n_write_bytes_available = 0, .write_overflow = false, 
-                                                                                  .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
-                                                                                  .reg_read = &U1RXREG, .reg_write = &U1TXREG, .reg_status = &U1STA, .reg_interrupt_flag = &IFS0,
-                                                                                  .interrupt_flag_tx_mask = UART1_TX_FLAG, .interrupt_flag_rx_mask = UART1_RX_FLAG },
+                                                .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
+                                                .reg_read = &U1RXREG, .reg_write = &U1TXREG, .reg_status = &U1STA, .reg_interrupt_flag = &IFS0,
+                                                .interrupt_flag_tx_mask = UART1_TX_FLAG, .interrupt_flag_rx_mask = UART1_RX_FLAG },
                                         {   .initialized = false,
                                             .write_big_endian_mode = false, .i_write_head_byte = 0, .i_write_tail_byte = 0, .n_write_bytes_available = 0, .write_overflow = false, 
-                                                                                  .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
-                                                                                  .reg_read = &U2RXREG, .reg_write = &U2TXREG, .reg_status = &U2STA, .reg_interrupt_flag = &IFS1,
-                                                                                  .interrupt_flag_tx_mask = UART1_TX_FLAG, .interrupt_flag_rx_mask = UART1_RX_FLAG }    };
+                                                .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
+                                                .reg_read = &U2RXREG, .reg_write = &U2TXREG, .reg_status = &U2STA, .reg_interrupt_flag = &IFS1,
+                                                .interrupt_flag_tx_mask = UART2_TX_FLAG, .interrupt_flag_rx_mask = UART2_RX_FLAG }    };
 
 static inline bool UART_low_speed( UART_speed_t baud )
 {
@@ -220,6 +220,7 @@ void tx_interrupt_handler( volatile UART_module_fd  *u_module )
         {
             *u_module->reg_write = u_module->write_buffer[u_module->i_write_tail_byte++];
             u_module->n_write_bytes_available--;
+            u_module->write_overflow = false;
         } else {
             RESET_REG_BIT( *(u_module->reg_interrupt_flag), u_module->interrupt_flag_tx_mask );
         }
@@ -243,12 +244,15 @@ void UART_write_byte( uart_module_t module, uint8_t elem )
     
     UART_module_fd *u_module = module;
     
-    while ( u_module->n_write_bytes_available == UART_DATA_BUFFER_SIZE ) { Nop(); }
+    while ( u_module->write_overflow ) { Nop(); }
     
     u_module->write_buffer[u_module->i_write_head_byte++] = elem;
     u_module->n_write_bytes_available++;
 
     SET_REG_BIT( *(u_module->reg_interrupt_flag), u_module->interrupt_flag_tx_mask );
+    
+    if ( u_module->n_write_bytes_available == UART_DATA_BUFFER_SIZE )
+        u_module->write_overflow = true;
 }
 
 #define HIGH_16( x ) (((x) >> 8) & 0xff)
