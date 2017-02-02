@@ -58,14 +58,14 @@ volatile UART_module_fd  uart_fd[] = {  {   .initialized = false,
                                                 .reg_read = &U2RXREG, .reg_write = &U2TXREG, .reg_status = &U2STA, .reg_interrupt_flag = &IFS1,
                                                 .interrupt_flag_tx_mask = UART2_TX_FLAG, .interrupt_flag_rx_mask = UART2_RX_FLAG }    };
 
-static inline bool UART_low_speed( UART_speed_t baud )
+static inline bool UART_low_speed( UART_speed_t i_baud )
 {
-    return( baud == UART_38400 || baud == UART_19200 || baud == UART_9600 );
+    return i_baud <= UART_last_low_speed;
 }
 
 #define ASSERT_MODULE_NUMBER( x )   ( (x) == 1 || (x) == 2 )
 
-uart_module_t UART_init( uint8_t module, UART_speed_t baud, Interrupt_priority_lvl_t priority )
+uart_module_t UART_init( uint8_t module, UART_speed_t i_baud, Interrupt_priority_lvl_t priority )
 {
     UART_module_fd *u_module = NULL;
     
@@ -79,11 +79,11 @@ uart_module_t UART_init( uint8_t module, UART_speed_t baud, Interrupt_priority_l
         U1MODEbits.UARTEN   = 0;            // Bit15 TX, RX DISABLED, ENABLE at end of func
         U1MODEbits.UEN      = 0;            // Bits8,9 TX,RX enabled, CTS,RTS not
         
-        if ( UART_low_speed( baud ) )
+        if ( UART_low_speed( i_baud ) )
             U1MODEbits.BRGH = 0;
         else
             U1MODEbits.BRGH = 1;
-        U1BRG               = baud;
+        U1BRG               = uart_speed[i_baud];
         
         _U1TXIF             = 0;
         _U1RXIF             = 0;
@@ -107,11 +107,11 @@ uart_module_t UART_init( uint8_t module, UART_speed_t baud, Interrupt_priority_l
         U2MODEbits.UARTEN   = 0;
         U2MODEbits.UEN      = 0;
         
-        if ( UART_low_speed( baud ) )
+        if ( UART_low_speed( i_baud ) )
             U2MODEbits.BRGH = 0;
         else
             U2MODEbits.BRGH = 1;
-        U2BRG               = baud;
+        U2BRG               = uart_speed[i_baud];
         
         _U2TXIF             = 0;
         _U2RXIF             = 0;
@@ -214,7 +214,7 @@ uint8_t UART_bytes_available( uart_module_t module )
 
 void tx_interrupt_handler( volatile UART_module_fd  *u_module )
 {
-    if ( !(*(u_module->reg_status) & UART_STA_BUFFER_FULL_BIT) )
+    while ( !(*(u_module->reg_status) & UART_STA_BUFFER_FULL_BIT) )
     {
         if ( u_module->n_write_bytes_available )
         {
@@ -223,6 +223,7 @@ void tx_interrupt_handler( volatile UART_module_fd  *u_module )
             u_module->write_overflow = false;
         } else {
             RESET_REG_BIT( *(u_module->reg_interrupt_flag), u_module->interrupt_flag_tx_mask );
+            break;
         }
     }
 }

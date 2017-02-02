@@ -101,7 +101,6 @@ void timer_start()
     T8CONbits.T32   = 1;
     T8CONbits.TCKPS = TIMER_DIV_1;
     TMR8 = TMR9HLD  = 0;
-    timer_ticks     = 0;
     
     T8CONbits.TON   = 1;
 }

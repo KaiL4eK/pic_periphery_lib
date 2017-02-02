@@ -26,20 +26,37 @@ int16_t ADC_read( void );
 
 /*** UART.c ***/
 
-typedef void * uart_module_t;
+typedef void *      uart_module_t;
+typedef uint16_t    UART_speed_t;
 
-typedef enum
-{
-    // High speed values BRGH = 1
-    UART_460800 = 8,
-    UART_230400 = 16,
-    UART_115200 = 34,        
-    UART_57600 = 68,
-    // Low speed values BRGH = 0
-    UART_38400 = 25,
-    UART_19200 = 51,
-    UART_9600 = 103
-} UART_speed_t;
+#ifndef UART_SPEED_VALUES
+#define UART_SPEED_VALUES
+
+static uint16_t uart_speed[] = {
+// Low Baud Rate
+#define UART_9600       0
+        103,
+#define UART_19200      (UART_9600 + 1)
+        51,
+#define UART_38400      (UART_19200 + 1)
+        25,
+#define UART_57600_L    (UART_38400 + 1)
+        17,
+#define UART_115200_L   (UART_57600_L + 1)
+        8,
+        
+#define UART_last_low_speed     UART_115200_L
+// High Baud Rate
+#define UART_57600      (UART_last_low_speed + 1)
+        68,
+#define UART_115200     (UART_57600 + 1)
+        34,
+#define UART_230400     (UART_115200 + 1)
+        16,
+#define UART_460800     (UART_230400 + 1)
+        8
+};
+#endif
 
 typedef enum
 {
