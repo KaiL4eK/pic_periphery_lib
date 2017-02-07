@@ -71,33 +71,33 @@ typedef enum
 } Interrupt_priority_lvl_t;
 
 uart_module_t UART_init( uint8_t module, UART_speed_t baud, Interrupt_priority_lvl_t priority );
+void UART_write_set_big_endian_mode ( uart_module_t module, bool big_endian );
 void UART_write_byte( uart_module_t module, uint8_t elem );
 void UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count );
 void UART_write_string( uart_module_t module, const char *fstring, ... );
-
-void UART_write_set_big_endian_mode ( uart_module_t module, bool big_endian );
-
 uint8_t UART_bytes_available( uart_module_t module );
 uint8_t UART_get_byte( uart_module_t module );
 void UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8_t n_bytes );
 
 /*** twi.c ***/
 
-void i2c_init( long Fscl );
+typedef void *      i2c_module_t;
 
-int i2c_write_bit_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t data);
-uint8_t i2c_read_bit_eeprom( uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start );
+i2c_module_t i2c_init( uint8_t module_num, long Fscl );
 
-int i2c_write_bits_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length, uint8_t data);
-uint8_t i2c_read_bits_eeprom( uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length );
+int i2c_write_bit_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t data );
+uint8_t i2c_read_bit_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start );
 
-int i2c_write_byte_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t data);
-uint8_t i2c_read_byte_eeprom(uint8_t slave_addr, uint8_t eeprom_addr);
+int i2c_write_bits_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length, uint8_t data );
+uint8_t i2c_read_bits_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length );
 
-int i2c_write_bytes_eeprom( uint8_t slave_addr, uint8_t eeprom_addr, uint8_t size, uint8_t *data_buffer );
-int i2c_read_bytes_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t lenght, uint8_t *data);
+int i2c_write_byte_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t data );
+uint8_t i2c_read_byte_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr );
 
-int i2c_write_word_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint16_t data);
+int i2c_write_bytes_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t size, uint8_t *data_buffer );
+int i2c_read_bytes_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t lenght, uint8_t *data );
+
+int i2c_write_word_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint16_t data );
 
 /*** spi.c ***/
 

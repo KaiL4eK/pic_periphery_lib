@@ -27,7 +27,7 @@ void i2c_stop( void )
     while(I2C1CONbits.PEN);         // Wait for stop condition to finish
 }
 
-void i2c_init( long Fscl )
+i2c_module_t i2c_init( uint8_t module_num, long Fscl )
 {
    I2C1CONbits.I2CEN = 0;           // Disable I2C Mode
    I2C1BRG = ((100000000.0/Fscl - 13) * FCY / 100000000.0) - 2;
@@ -41,6 +41,8 @@ void i2c_init( long Fscl )
    i2c_idle();
    i2c_stop();
    i2c_idle();
+   
+   return NULL;
 }
 
 void i2c_restart( void )
@@ -66,7 +68,7 @@ void i2c_nack( void )
     while(I2C1CONbits.ACKEN);       // wait for ack data to send on bus
 }
 
-int8_t i2c_send_byte(uint8_t data)
+int i2c_send_byte(uint8_t data)
 {
     i2c_idle();                     //Ensure Module is Idle
     I2C1TRN = data;    
@@ -76,7 +78,7 @@ int8_t i2c_send_byte(uint8_t data)
     return( 0 );
 }
 
-int8_t i2c_receive_byte(uint8_t *data)
+int i2c_receive_byte(uint8_t *data)
 {
     i2c_idle();                     //Ensure Module is Idle
     I2C1CONbits.RCEN = 1;        // Enable data reception
@@ -86,7 +88,7 @@ int8_t i2c_receive_byte(uint8_t *data)
     return( 0 );
 }
 
-int8_t i2c_send_bytes(uint8_t *str, uint8_t lenght)
+int i2c_send_bytes(uint8_t *str, uint8_t lenght)
 {
     while(lenght--)                    //Transmit Data Until Pagesize
     {
@@ -101,7 +103,7 @@ int8_t i2c_send_bytes(uint8_t *str, uint8_t lenght)
     return( 0 );
 }
 
-int8_t i2c_receive_bytes(uint8_t *str, uint8_t length)
+int i2c_receive_bytes(uint8_t *str, uint8_t length)
 {
     while(length--)
     {
@@ -121,7 +123,7 @@ int8_t i2c_receive_bytes(uint8_t *str, uint8_t length)
 
 /** External API **/
 
-int i2c_write_bytes_eeprom( uint8_t slave_addr, uint8_t eeprom_addr, uint8_t size, uint8_t *data_buffer )
+int i2c_write_bytes_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t size, uint8_t *data_buffer )
 {
     if ( !size )
         return( 0 );
@@ -136,12 +138,12 @@ int i2c_write_bytes_eeprom( uint8_t slave_addr, uint8_t eeprom_addr, uint8_t siz
     return( 0 );
 }
 
-int i2c_write_byte_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t data)
+int i2c_write_byte_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t data )
 {
-    return( i2c_write_bytes_eeprom( slave_addr, eeprom_addr, 1, &data ) );
+    return( i2c_write_bytes_eeprom( module, slave_addr, eeprom_addr, 1, &data ) );
 }
 
-int i2c_write_word_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint16_t data)
+int i2c_write_word_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint16_t data )
 {
     i2c_start();                    //Generate Start COndition
     // Function send already has idle inside
@@ -161,7 +163,7 @@ int i2c_write_word_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint16_t data
     return( 0 );
 }
 
-int i2c_read_bytes_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t lenght, uint8_t *data)
+int i2c_read_bytes_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t lenght, uint8_t *data )
 {
     if ( !lenght )
         return( 0 );
@@ -188,14 +190,14 @@ int i2c_read_bytes_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t lengh
     return( 0 );
 }
 
-uint8_t i2c_read_byte_eeprom(uint8_t slave_addr, uint8_t eeprom_addr)
+uint8_t i2c_read_byte_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr )
 {
     uint8_t data;
-    i2c_read_bytes_eeprom( slave_addr, eeprom_addr, 1, &data );
+    i2c_read_bytes_eeprom( module, slave_addr, eeprom_addr, 1, &data );
     return( data );
 }
 
-int i2c_write_bits_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length, uint8_t data)
+int i2c_write_bits_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length, uint8_t data )
 {
     //      010 value to write
     // 76543210 bit numbers
@@ -204,7 +206,7 @@ int i2c_write_bits_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_s
     // 10101111 original value (sample)
     // 10100011 original & ~mask
     // 10101011 masked | value
-    uint8_t data_reg = i2c_read_byte_eeprom( slave_addr, eeprom_addr ),
+    uint8_t data_reg = i2c_read_byte_eeprom( module, slave_addr, eeprom_addr ),
             data_write = data;
     
     uint8_t mask = ((1 << length) - 1) << (bit_start - length + 1);
@@ -212,27 +214,27 @@ int i2c_write_bits_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_s
     data_write &= mask; // zero all non-important bits in data
     data_reg &= ~(mask); // zero all important bits in existing byte
     data_reg |= data_write; // combine data with existing byte
-    i2c_write_byte_eeprom(slave_addr, eeprom_addr, data_reg);
+    i2c_write_byte_eeprom( module, slave_addr, eeprom_addr, data_reg );
     return( 0 );
 }
 
-int i2c_write_bit_eeprom(uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t data)
+int i2c_write_bit_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t data )
 {
-    return( i2c_write_bits_eeprom( slave_addr, eeprom_addr, bit_start, 1, data ) );
+    return( i2c_write_bits_eeprom( module, slave_addr, eeprom_addr, bit_start, 1, data ) );
 }
 
-uint8_t i2c_read_bits_eeprom( uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length )
+uint8_t i2c_read_bits_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t length )
 {
     if ( !length )
         return( 0 );
     
     uint8_t mask = (1 << length) - 1;
-    return( (i2c_read_byte_eeprom( slave_addr, eeprom_addr ) >> (bit_start - length + 1)) & mask );
+    return( (i2c_read_byte_eeprom( module, slave_addr, eeprom_addr ) >> (bit_start - length + 1)) & mask );
 }
 
-uint8_t i2c_read_bit_eeprom( uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start )
+uint8_t i2c_read_bit_eeprom( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start )
 {
-    return( (i2c_read_byte_eeprom( slave_addr, eeprom_addr ) >> bit_start) & 0x1 );
+    return (i2c_read_byte_eeprom( module, slave_addr, eeprom_addr ) >> bit_start) & 0x1;
 }
 
 
