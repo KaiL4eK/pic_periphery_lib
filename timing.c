@@ -4,11 +4,6 @@
 typedef uint32_t TimerTicks32_t;
 typedef uint16_t TimerTicks16_t;
 
-#define TIMER_DIV_1   0b00
-#define TIMER_DIV_8   0b01
-#define TIMER_DIV_64  0b10
-#define TIMER_DIV_256 0b11
-
 void setup_PLL_oscillator( void )
 {
     PLLFBDbits.PLLDIV = 38; // M=40 Fvco = 160Mhz

@@ -128,6 +128,11 @@ void delay_ms( uint16_t mseconds );
 void delay_us( uint16_t useconds );
 #endif
 
+#define TIMER_DIV_1   0b00
+#define TIMER_DIV_8   0b01
+#define TIMER_DIV_64  0b10
+#define TIMER_DIV_256 0b11
+
 /** Timer module **/
 void timer_start();
 void timer_restart();
