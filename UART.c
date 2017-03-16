@@ -208,6 +208,14 @@ uint8_t UART_bytes_available( uart_module_t module )
     return ((UART_module_fd *)module)->n_read_bytes_available;
 }
 
+void UART_clean_input( uart_module_t module )
+{
+    UART_module_fd *u_module = module;
+    
+    u_module->n_read_bytes_available = 0;
+    u_module->i_read_tail_byte       = u_module->i_read_head_byte;
+}
+
 /**
  * Writing API
  */

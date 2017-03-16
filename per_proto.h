@@ -76,6 +76,7 @@ void UART_write_byte( uart_module_t module, uint8_t elem );
 void UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count );
 void UART_write_string( uart_module_t module, const char *fstring, ... );
 uint8_t UART_bytes_available( uart_module_t module );
+void UART_clean_input( uart_module_t module );
 uint8_t UART_get_byte( uart_module_t module );
 void UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8_t n_bytes );
 
