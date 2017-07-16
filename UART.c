@@ -6,6 +6,34 @@
 /*              UART            */
 /********************************/
 
+#ifndef UART_SPEED_VALUES
+#define UART_SPEED_VALUES
+
+static uint16_t uart_speed[] = {
+// Low Baud Rate
+//#define UART_9600       0
+        103,
+//#define UART_19200      (UART_9600 + 1)
+        51,
+//#define UART_38400      (UART_19200 + 1)
+        25,
+//#define UART_57600_L    (UART_38400 + 1)
+        17,
+//#define UART_115200_L   (UART_57600_L + 1)
+        8,
+//#define UART_last_low_speed     UART_115200_L
+// High Baud Rate
+//#define UART_57600      (UART_last_low_speed + 1)
+        68,
+//#define UART_115200     (UART_57600 + 1)
+        34,
+//#define UART_230400     (UART_115200 + 1)
+        16,
+//#define UART_460800     (UART_230400 + 1)
+        8
+};
+#endif
+
 #define UART_DATA_BUFFER_SIZE       256
 
 #define UART1_TX_FLAG               (1 << 12)
@@ -58,14 +86,14 @@ volatile UART_module_fd  uart_fd[] = {  {   .initialized = false,
                                                 .reg_read = &U2RXREG, .reg_write = &U2TXREG, .reg_status = &U2STA, .reg_interrupt_flag = &IFS1,
                                                 .interrupt_flag_tx_mask = UART2_TX_FLAG, .interrupt_flag_rx_mask = UART2_RX_FLAG }    };
 
-static inline bool UART_low_speed( UART_speed_t i_baud )
+static inline bool UART_low_speed( UART_speed_idx_t i_baud )
 {
-    return i_baud <= UART_last_low_speed;
+    return i_baud <= UART_BAUD_IDX_last_low_speed;
 }
 
 #define ASSERT_MODULE_NUMBER( x )   ( (x) == 1 || (x) == 2 )
 
-uart_module_t UART_init( uint8_t module, UART_speed_t i_baud, Interrupt_priority_lvl_t priority )
+uart_module_t UART_init( uint8_t module, UART_speed_idx_t i_baud, Interrupt_priority_lvl_t priority )
 {
     UART_module_fd *u_module = NULL;
     

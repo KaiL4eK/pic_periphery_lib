@@ -27,58 +27,44 @@ int16_t ADC_read( void );
 /*** UART.c ***/
 
 typedef void *      uart_module_t;
-typedef uint16_t    UART_speed_t;
+//typedef uint16_t    UART_speed_t;
 
-#ifndef UART_SPEED_VALUES
-#define UART_SPEED_VALUES
-
-static uint16_t uart_speed[] = {
-// Low Baud Rate
-#define UART_9600       0
-        103,
-#define UART_19200      (UART_9600 + 1)
-        51,
-#define UART_38400      (UART_19200 + 1)
-        25,
-#define UART_57600_L    (UART_38400 + 1)
-        17,
-#define UART_115200_L   (UART_57600_L + 1)
-        8,
-        
-#define UART_last_low_speed     UART_115200_L
+typedef enum {
+// Low baud rate
+    UART_BAUD_IDX_9600               = 0,
+    UART_BAUD_IDX_19200              = (UART_BAUD_IDX_9600 + 1),
+    UART_BAUD_IDX_38400              = (UART_BAUD_IDX_19200 + 1),
+    UART_BAUD_IDX_57600_L            = (UART_BAUD_IDX_38400 + 1),
+    UART_BAUD_IDX_115200_L           = (UART_BAUD_IDX_57600_L + 1),
+    UART_BAUD_IDX_last_low_speed     = UART_BAUD_IDX_115200_L,
 // High Baud Rate
-#define UART_57600      (UART_last_low_speed + 1)
-        68,
-#define UART_115200     (UART_57600 + 1)
-        34,
-#define UART_230400     (UART_115200 + 1)
-        16,
-#define UART_460800     (UART_230400 + 1)
-        8
-};
-#endif
-
+    UART_BAUD_IDX_57600              = (UART_BAUD_IDX_last_low_speed + 1),
+    UART_BAUD_IDX_115200             = (UART_BAUD_IDX_57600 + 1),
+    UART_BAUD_IDX_230400             = (UART_BAUD_IDX_115200 + 1),
+    UART_BAUD_IDX_460800             = (UART_BAUD_IDX_230400 + 1)
+} UART_speed_idx_t;
+    
 typedef enum
 {
-    INT_PRIO_OFF = 0,
-    INT_PRIO_LOWEST = 1,
-    INT_PRIO_LOW = 2,
-    INT_PRIO_MID_LOW = 3,
-    INT_PRIO_MID = 4,
-    INT_PRIO_MID_HIGH = 5,
-    INT_PRIO_HIGH = 6,
-    INT_PRIO_HIGHEST = 7
+    INT_PRIO_OFF        = 0,
+    INT_PRIO_LOWEST     = 1,
+    INT_PRIO_LOW        = 2,
+    INT_PRIO_MID_LOW    = 3,
+    INT_PRIO_MID        = 4,
+    INT_PRIO_MID_HIGH   = 5,
+    INT_PRIO_HIGH       = 6,
+    INT_PRIO_HIGHEST    = 7
 } Interrupt_priority_lvl_t;
 
-uart_module_t UART_init( uint8_t module, UART_speed_t baud, Interrupt_priority_lvl_t priority );
-void UART_write_set_big_endian_mode ( uart_module_t module, bool big_endian );
-void UART_write_byte( uart_module_t module, uint8_t elem );
-void UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count );
-void UART_write_string( uart_module_t module, const char *fstring, ... );
-uint8_t UART_bytes_available( uart_module_t module );
-void UART_clean_input( uart_module_t module );
-uint8_t UART_get_byte( uart_module_t module );
-void UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8_t n_bytes );
+uart_module_t   UART_init( uint8_t module, UART_speed_idx_t i_baud, Interrupt_priority_lvl_t priority );
+void            UART_write_set_big_endian_mode ( uart_module_t module, bool big_endian );
+void            UART_write_byte( uart_module_t module, uint8_t elem );
+void            UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count );
+void            UART_write_string( uart_module_t module, const char *fstring, ... );
+uint8_t         UART_bytes_available( uart_module_t module );
+void            UART_clean_input( uart_module_t module );
+uint8_t         UART_get_byte( uart_module_t module );
+void            UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8_t n_bytes );
 
 /*** twi.c ***/
 
