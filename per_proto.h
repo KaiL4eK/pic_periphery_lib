@@ -10,13 +10,25 @@
 #include <string.h>
 #include <xc.h>
 
+/***** CONFIGURATION ZONE *****/
+
+#define DSPIC_ENABLE_PLL
+
+/******************************/
+
+
 #define RADIANS_TO_DEGREES          57.295779513f
 #define DEGREES_TO_RADIANS          0.017453293f
 
 #define SWAP( x, y ) { uint8_t tmp = x; x = y; y = tmp; }
 #define OFF_ALL_ANALOG_INPUTS   { AD1PCFGL = 0x1fff; }
+#define clip_value( val, min, max ) ((val) > max ? max : (val) < min ? min : (val))
 
-#define FOSC        32000000ULL
+#ifdef DSPIC_ENABLE_PLL
+    #define FOSC        80000000ULL
+#else
+    #define FOSC        32000000ULL
+#endif
 #define FCY         (FOSC/2)
 
 /*** ADC.c ***/
@@ -27,23 +39,24 @@ int16_t ADC_read( void );
 /*** UART.c ***/
 
 typedef void *      uart_module_t;
-//typedef uint16_t    UART_speed_t;
+typedef uint16_t    UART_baud_rate_t;
 
-typedef enum {
-// Low baud rate
-    UART_BAUD_IDX_9600               = 0,
-    UART_BAUD_IDX_19200              = (UART_BAUD_IDX_9600 + 1),
-    UART_BAUD_IDX_38400              = (UART_BAUD_IDX_19200 + 1),
-    UART_BAUD_IDX_57600_L            = (UART_BAUD_IDX_38400 + 1),
-    UART_BAUD_IDX_115200_L           = (UART_BAUD_IDX_57600_L + 1),
-    UART_BAUD_IDX_last_low_speed     = UART_BAUD_IDX_115200_L,
-// High Baud Rate
-    UART_BAUD_IDX_57600              = (UART_BAUD_IDX_last_low_speed + 1),
-    UART_BAUD_IDX_115200             = (UART_BAUD_IDX_57600 + 1),
-    UART_BAUD_IDX_230400             = (UART_BAUD_IDX_115200 + 1),
-    UART_BAUD_IDX_460800             = (UART_BAUD_IDX_230400 + 1)
-} UART_speed_idx_t;
-    
+// TODO <<<! Count other UART rates
+#ifdef DSPIC_ENABLE_PLL
+    #define UART_BAUD_RATE_460800_HS    21
+#else
+    #define UART_BAUD_RATE_9600_LS      103
+    #define UART_BAUD_RATE_19200_LS     51
+    #define UART_BAUD_RATE_38400_LS     25
+    #define UART_BAUD_RATE_57600_LS     17
+    #define UART_BAUD_RATE_115200_LS    8
+
+    #define UART_BAUD_RATE_57600_HS     68
+    #define UART_BAUD_RATE_115200_HS    34
+    #define UART_BAUD_RATE_230400_HS    16
+    #define UART_BAUD_RATE_460800_HS    8
+#endif
+
 typedef enum
 {
     INT_PRIO_OFF        = 0,
@@ -56,7 +69,7 @@ typedef enum
     INT_PRIO_HIGHEST    = 7
 } Interrupt_priority_lvl_t;
 
-uart_module_t   UART_init( uint8_t module, UART_speed_idx_t i_baud, Interrupt_priority_lvl_t priority );
+uart_module_t   UART_init( uint8_t module, UART_baud_rate_t baur_rate, bool high_speed, Interrupt_priority_lvl_t priority );
 void            UART_write_set_big_endian_mode ( uart_module_t module, bool big_endian );
 void            UART_write_byte( uart_module_t module, uint8_t elem );
 void            UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count );
@@ -70,7 +83,7 @@ void            UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8
 
 typedef void *      i2c_module_t;
 
-i2c_module_t i2c_init( uint8_t module_num, long Fscl );
+i2c_module_t i2c_init( uint8_t module_num );
 
 int i2c_write_bit( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start, uint8_t data );
 uint8_t i2c_read_bit( i2c_module_t module, uint8_t slave_addr, uint8_t eeprom_addr, uint8_t bit_start );
@@ -121,6 +134,11 @@ void delay_us( uint16_t useconds );
 #define TIMER_DIV_256 0b11
 
 /** Timer module **/
+
+/*
+ * TMR 8/9 - Timer functions
+ */
+
 void timer_start();
 void timer_restart();
 void timer_stop();
@@ -159,8 +177,6 @@ int flash_flush ( void );
 int flash_read ( void );
 int flash_set ( FlashData_t data_type, int data );
 int flash_get ( FlashData_t data_type );
-
-#define clip_value( val, min, max ) ((val) > max ? max : (val) < min ? min : (val))
 
 #endif	/* PERIPHERY_PROTO_H_ */
 

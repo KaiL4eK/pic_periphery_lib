@@ -4,6 +4,12 @@
 
 // HW dependent functions
 
+#ifdef DSPIC_ENABLE_PLL
+    #define I2C_SPEED_400K        45
+#else
+    #define I2C_SPEED_400K        17
+#endif
+
 void i2c_idle( void )
 {
     // Wait until I2C Bus is Inactive
@@ -27,15 +33,15 @@ void i2c_stop( void )
     while(I2C1CONbits.PEN);         // Wait for stop condition to finish
 }
 
-i2c_module_t i2c_init( uint8_t module_num, long Fscl )
+i2c_module_t i2c_init( uint8_t module_num )
 {
-   I2C1CONbits.I2CEN = 0;           // Disable I2C Mode
-   I2C1BRG = ((100000000.0/Fscl - 13) * FCY / 100000000.0) - 2;
-   I2C1CONbits.A10M = 0;            // Disable 10 bit address
+   I2C1CONbits.I2CEN    = 0;                // Disable I2C Mode
+   I2C1BRG              = I2C_SPEED_400K;   // ((100000000.0/Fscl - 13) * FCY / 100000000.0) - 2;
+   I2C1CONbits.A10M     = 0;                // Disable 10 bit address
    
-   I2C1CONbits.DISSLW = 1;          // Disable slew rate control
-   IFS1bits.MI2C1IF = 0;            // Clear Interrupt
-   I2C1CONbits.I2CEN = 1;           // Enable I2C Mode
+   I2C1CONbits.DISSLW   = 1;                // Disable slew rate control
+   IFS1bits.MI2C1IF     = 0;                // Clear Interrupt
+   I2C1CONbits.I2CEN    = 1;                // Enable I2C Mode
    i2c_idle();
    i2c_start();
    i2c_idle();

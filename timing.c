@@ -6,15 +6,36 @@ typedef uint16_t TimerTicks16_t;
 
 void setup_PLL_oscillator( void )
 {
+#ifdef DSPIC_ENABLE_PLL
+/* 000000000 = 2
+ * 000000001 = 3
+ * 000000010 = 4
+ * •
+ * 000110000 = 50 (default)
+ * •
+ * 111111111 = 513
+ */
     PLLFBDbits.PLLDIV = 38; // M=40 Fvco = 160Mhz
-    CLKDIVbits.PLLPOST = 0; // N1=2 Fpost = 80Mhz
-    CLKDIVbits.PLLPRE = 6;  // N2=8 Fpre = 4Mhz
+/* 00 = Output/2
+ * 01 = Output/4 (default)
+ * 10 = Reserved
+ * 11 = Output/8
+ */
+    CLKDIVbits.PLLPOST = 0b00; // N2=2 Fpost = 80Mhz
+/* 
+ * 00000 = Input/2 (default)
+ * 00001 = Input/3
+ * •
+ * 11111 = Input/33
+ */
+    CLKDIVbits.PLLPRE = 6;  // N1=8 Fpre = 4Mhz
 
-    __builtin_write_OSCCONH(0x03);  // Initiate Clock Switch to Primary 
-               // Oscillator with PLL (NOSC=0b011) 
+    __builtin_write_OSCCONH(0b011); // Initiate Clock Switch to Primary 
+                                    // Oscillator with PLL (NOSC=0b011) 
     __builtin_write_OSCCONL(0x01);  // Start clock switching 
     while (OSCCONbits.COSC != 0b011) ;
     while (OSCCONbits.LOCK != 1) ;
+#endif
 }
 
 /********************************/
@@ -90,6 +111,7 @@ void __attribute__( (__interrupt__, no_auto_psv) ) _T9Interrupt()
 }
 
 // Timer (divider = 1, period = MAX, FCY = 16MHz) counts up to 268 sec
+// Timer (divider = 1, period = MAX, FCY = 40MHz) counts up to 53 sec
 void timer_start()
 {
     T8CONbits.TON   = 0;
