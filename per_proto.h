@@ -8,13 +8,14 @@
 #include <stdarg.h>
 #include <math.h>
 #include <string.h>
-#include <xc.h>
 
 /***** CONFIGURATION ZONE *****/
 
 #define DSPIC_ENABLE_PLL
 
 /******************************/
+
+#include <xc.h>
 
 
 #define RADIANS_TO_DEGREES          57.295779513f
@@ -44,6 +45,7 @@ typedef uint16_t    UART_baud_rate_t;
 // TODO <<<! Count other UART rates
 #ifdef DSPIC_ENABLE_PLL
     #define UART_BAUD_RATE_460800_HS    21
+    #define UART_BAUD_RATE_921600_HS    10
 #else
     #define UART_BAUD_RATE_9600_LS      103
     #define UART_BAUD_RATE_19200_LS     51
