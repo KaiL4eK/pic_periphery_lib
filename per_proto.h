@@ -11,7 +11,7 @@
 
 /***** CONFIGURATION ZONE *****/
 
-#define DSPIC_ENABLE_PLL
+//#define DSPIC_ENABLE_PLL
 
 /******************************/
 
