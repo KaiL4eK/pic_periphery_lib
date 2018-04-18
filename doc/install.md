@@ -15,14 +15,20 @@
 
 Далее необходимо указать путь поиска заголовочных файлов (*header files*)
 Необходимо зайти в свойства проекта
-###### Нажимаем правой кнопкой по проекту, в самом низу выбираем `Properties`
+*Нажимаем правой кнопкой по проекту, в самом низу выбираем `Properties`*
 
+Выбираем категорию `XC16 (Global Options)` -> `Common include dirs` -> `...`
+Далее жмем кнопку `Browse` и выбираем путь до папки
+![alt text][install4]
 
-
+В результате относительный путь должен появиться в перечислении путей:
+![alt text][install5]
 
 [src_state]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install1.png "Initial state"
-[install1]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install1.png "First step"
-[install2]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install1.png "Next step"
-[install3]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install1.png "Next step"
-[install4]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install1.png "Next step"
-[install5]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install1.png "Next step"
+[install1]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install2.png "First step"
+[install2]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install3.png "Next step"
+[install3]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install4.png "Next step"
+[install4]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install5.png "Next step"
+[install5]: https://github.com/KaiL4eK/pic_periphery_lib/blob/master/doc/img/install6.png "Next step"
+
+После выполнения данных шагов можно использовать библиотеку периферии
