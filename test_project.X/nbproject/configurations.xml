@@ -7,6 +7,7 @@
       <itemPath>../per_proto.h</itemPath>
       <itemPath>../pragmas.h</itemPath>
       <itemPath>../pragmas_pll.h</itemPath>
+      <itemPath>../UART.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

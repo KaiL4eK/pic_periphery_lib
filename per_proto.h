@@ -15,13 +15,16 @@
 
 /******************************/
 
-#include <xc.h>
+#ifndef __dsPIC33FJ256MC710__
+    #error "Not supported core"
+#endif
 
+#include <xc.h>
 
 #define RADIANS_TO_DEGREES          57.295779513f
 #define DEGREES_TO_RADIANS          0.017453293f
 
-#define SWAP( x, y ) { uint8_t tmp = x; x = y; y = tmp; }
+#define SWAP8( x, y ) { uint8_t tmp = x; x = y; y = tmp; }
 #define OFF_ALL_ANALOG_INPUTS   { AD1PCFGL = 0x1fff; }
 #define clip_value( val, min, max ) ((val) > max ? max : (val) < min ? min : (val))
 
@@ -37,28 +40,6 @@
 int ADC_init ( uint8_t channel );
 int16_t ADC_read( void );
 
-/*** UART.c ***/
-
-typedef void *      uart_module_t;
-typedef uint16_t    UART_baud_rate_t;
-
-// TODO <<<! Count other UART rates
-#ifdef DSPIC_ENABLE_PLL
-    #define UART_BAUD_RATE_460800_HS    21
-    #define UART_BAUD_RATE_921600_HS    10
-#else
-    #define UART_BAUD_RATE_9600_LS      103
-    #define UART_BAUD_RATE_19200_LS     51
-    #define UART_BAUD_RATE_38400_LS     25
-    #define UART_BAUD_RATE_57600_LS     17
-    #define UART_BAUD_RATE_115200_LS    8
-
-    #define UART_BAUD_RATE_57600_HS     68
-    #define UART_BAUD_RATE_115200_HS    34
-    #define UART_BAUD_RATE_230400_HS    16
-    #define UART_BAUD_RATE_460800_HS    8
-#endif
-
 typedef enum
 {
     INT_PRIO_OFF        = 0,
@@ -70,16 +51,6 @@ typedef enum
     INT_PRIO_HIGH       = 6,
     INT_PRIO_HIGHEST    = 7
 } Interrupt_priority_lvl_t;
-
-uart_module_t   UART_init( uint8_t module, UART_baud_rate_t baur_rate, bool high_speed, Interrupt_priority_lvl_t priority );
-void            UART_write_set_big_endian_mode ( uart_module_t module, bool big_endian );
-void            UART_write_byte( uart_module_t module, uint8_t elem );
-void            UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count );
-void            UART_write_string( uart_module_t module, const char *fstring, ... );
-uint8_t         UART_bytes_available( uart_module_t module );
-void            UART_clean_input( uart_module_t module );
-uint8_t         UART_get_byte( uart_module_t module );
-void            UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8_t n_bytes );
 
 /*** twi.c ***/
 

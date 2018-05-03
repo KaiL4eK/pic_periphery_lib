@@ -1,12 +1,10 @@
-#include <p33FJ256MC710.h>
-
 #include "per_proto.h"
+
+#include <UART.h>
 
 /********************************/
 /*              UART            */
 /********************************/
-
-#define UART_DATA_BUFFER_SIZE       256
 
 #define UART1_TX_FLAG               (1 << 12)
 #define UART1_RX_FLAG               (1 << 11)
@@ -20,57 +18,24 @@
 #define SET_REG_BIT(reg, mask)      ( (reg) |= (mask) )
 #define RESET_REG_BIT(reg, mask)    ( (reg) &= ~(mask) )
 
-typedef struct
+volatile UART_module uart1_ctx = {  .initialized = false, .write_big_endian_mode = false, 
+                                    .i_write_head_byte = 0, .i_write_tail_byte = 0, .n_write_bytes_available = 0, .write_overflow = false, 
+                                    .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
+                                    .reg_read = &U1RXREG, .reg_write = &U1TXREG, .reg_status = &U1STA, .reg_interrupt_flag = &IFS0,
+                                    .interrupt_flag_tx_mask = UART1_TX_FLAG, .interrupt_flag_rx_mask = UART1_RX_FLAG };
+
+volatile UART_module uart2_ctx = {  .initialized = false, .write_big_endian_mode = false, 
+                                    .i_write_head_byte = 0, .i_write_tail_byte = 0, .n_write_bytes_available = 0, .write_overflow = false, 
+                                    .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
+                                    .reg_read = &U2RXREG, .reg_write = &U2TXREG, .reg_status = &U2STA, .reg_interrupt_flag = &IFS1,
+                                    .interrupt_flag_tx_mask = UART2_TX_FLAG, .interrupt_flag_rx_mask = UART2_RX_FLAG };
+
+static char send_buffer[UART_DATA_BUFFER_SIZE];
+
+int UART_init( UART_module *uart_ctx, UART_baud_rate_t baud_rate, bool high_speed, Interrupt_priority_lvl_t priority )
 {
-    bool                    initialized;
-    
-    bool                    write_big_endian_mode;
-    uint8_t                 write_buffer[UART_DATA_BUFFER_SIZE];
-    uint8_t                 i_write_head_byte;
-    uint8_t                 i_write_tail_byte;
-    uint8_t                 n_write_bytes_available;
-    bool                    write_overflow;
-    
-    uint8_t                 read_buffer[UART_DATA_BUFFER_SIZE];
-    uint8_t                 i_read_head_byte;
-    uint8_t                 i_read_tail_byte;
-    uint8_t                 n_read_bytes_available;
-    bool                    read_overflow;
-    
-    volatile unsigned int   *reg_read;    
-    volatile unsigned int   *reg_write;  
-    volatile unsigned int   *reg_status;
-    
-    volatile unsigned int   *reg_interrupt_flag;
-    
-    unsigned int            interrupt_flag_tx_mask;
-    unsigned int            interrupt_flag_rx_mask;
-}UART_module_fd;
-
-volatile UART_module_fd  uart_fd[] = {  {   .initialized = false,
-                                            .write_big_endian_mode = false, .i_write_head_byte = 0, .i_write_tail_byte = 0, .n_write_bytes_available = 0, .write_overflow = false, 
-                                                .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
-                                                .reg_read = &U1RXREG, .reg_write = &U1TXREG, .reg_status = &U1STA, .reg_interrupt_flag = &IFS0,
-                                                .interrupt_flag_tx_mask = UART1_TX_FLAG, .interrupt_flag_rx_mask = UART1_RX_FLAG },
-                                        {   .initialized = false,
-                                            .write_big_endian_mode = false, .i_write_head_byte = 0, .i_write_tail_byte = 0, .n_write_bytes_available = 0, .write_overflow = false, 
-                                                .i_read_head_byte = 0,  .i_read_tail_byte = 0,  .n_read_bytes_available = 0,  .read_overflow = false,
-                                                .reg_read = &U2RXREG, .reg_write = &U2TXREG, .reg_status = &U2STA, .reg_interrupt_flag = &IFS1,
-                                                .interrupt_flag_tx_mask = UART2_TX_FLAG, .interrupt_flag_rx_mask = UART2_RX_FLAG }    };
-
-#define ASSERT_MODULE_NUMBER( x )   ( (x) == 1 || (x) == 2 )
-
-uart_module_t UART_init( uint8_t module, UART_baud_rate_t baur_rate, bool high_speed, Interrupt_priority_lvl_t priority )
-{
-    UART_module_fd *u_module = NULL;
-    
-    if ( !ASSERT_MODULE_NUMBER( module ) )
-        return NULL;
-    
-    if ( module == 1 )
-    {
-        u_module = (UART_module_fd *)&uart_fd[0];
-        
+    if ( uart_ctx == &uart1_ctx )
+    {  
         U1MODEbits.UARTEN   = 0;            // Bit15 TX, RX DISABLED, ENABLE at end of func
         U1MODEbits.UEN      = 0;            // Bits8,9 TX,RX enabled, CTS,RTS not
         
@@ -78,7 +43,7 @@ uart_module_t UART_init( uint8_t module, UART_baud_rate_t baur_rate, bool high_s
             U1MODEbits.BRGH = 1;
         else
             U1MODEbits.BRGH = 0;
-        U1BRG               = baur_rate;
+        U1BRG               = baud_rate;
         
         _U1TXIF             = 0;
         _U1RXIF             = 0;
@@ -95,10 +60,8 @@ uart_module_t UART_init( uint8_t module, UART_baud_rate_t baur_rate, bool high_s
         U1MODEbits.UARTEN   = 1;            // And turn the peripheral on
         U1STAbits.UTXEN     = 1; 
     } 
-    else
+    else if ( uart_ctx == &uart2_ctx )
     {
-        u_module = (UART_module_fd *)&uart_fd[1];
-        
         U2MODEbits.UARTEN   = 0;
         U2MODEbits.UEN      = 0;
         
@@ -106,7 +69,7 @@ uart_module_t UART_init( uint8_t module, UART_baud_rate_t baur_rate, bool high_s
             U2MODEbits.BRGH = 1;
         else
             U2MODEbits.BRGH = 0;
-        U2BRG               = baur_rate;
+        U2BRG               = baud_rate;
         
         _U2TXIF             = 0;
         _U2RXIF             = 0;
@@ -124,64 +87,61 @@ uart_module_t UART_init( uint8_t module, UART_baud_rate_t baur_rate, bool high_s
         U2STAbits.UTXEN     = 1;      
     }
     
-    u_module->initialized   = true;
-    return u_module;
+    uart_ctx->initialized   = true;
+    
+    return 0;
 }
 
-void UART_write_set_big_endian_mode ( uart_module_t module, bool big_endian )
+void UART_write_set_big_endian_mode ( UART_module *module, bool big_endian )
 {
-    UART_module_fd *u_module = module;
-    
     if ( module == NULL )
         return;
     
-    u_module->write_big_endian_mode = big_endian;
+    module->write_big_endian_mode = big_endian;
 }
 
 /**
  * Reading API
  */
 
-void rx_interrupt_handler( volatile UART_module_fd  *u_module )
+void rx_interrupt_handler( volatile UART_module *module )
 {
-    if ( (*(u_module->reg_status) & UART_STA_DATA_ACCESS_BIT) && !u_module->read_overflow ) 
+    if ( (*(module->reg_status) & UART_STA_DATA_ACCESS_BIT) && !module->read_overflow ) 
     {
-        u_module->read_buffer[u_module->i_read_head_byte++] = *u_module->reg_read;
+        module->read_buffer[module->i_read_head_byte++] = *module->reg_read;
         
-        if ( ++u_module->n_read_bytes_available == UART_DATA_BUFFER_SIZE ) {
-            u_module->read_overflow = true;
+        if ( ++module->n_read_bytes_available == UART_DATA_BUFFER_SIZE ) {
+            module->read_overflow = true;
         }
     } else
-        RESET_REG_BIT( *(u_module->reg_interrupt_flag), u_module->interrupt_flag_rx_mask );
+        RESET_REG_BIT( *(module->reg_interrupt_flag), module->interrupt_flag_rx_mask );
 }
 
 void __attribute__( (__interrupt__, auto_psv) ) _U1RXInterrupt()
 {
-    rx_interrupt_handler( &uart_fd[0] );
+    rx_interrupt_handler( &uart1_ctx );
 }
 
 void __attribute__( (__interrupt__, auto_psv) ) _U2RXInterrupt()
 {
-    rx_interrupt_handler( &uart_fd[1] );
+    rx_interrupt_handler( &uart2_ctx );
 }
 
-uint8_t UART_get_byte( uart_module_t module )   
+uint8_t UART_get_byte( UART_module *module )   
 {
     if ( module == NULL )
         return 0;
     
-    UART_module_fd *u_module = module;
-    
-    if ( u_module->n_read_bytes_available == 0 )
+    if ( module->n_read_bytes_available == 0 )
         return 0;
     
-    u_module->read_overflow = false;
+    module->read_overflow = false;
     
-    u_module->n_read_bytes_available--;
-    return u_module->read_buffer[u_module->i_read_tail_byte++];
+    module->n_read_bytes_available--;
+    return module->read_buffer[module->i_read_tail_byte++];
 }
 
-void UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8_t n_bytes )
+void UART_get_bytes( UART_module *module, uint8_t *out_buffer, uint8_t n_bytes )
 {
     if ( module == NULL )
         return;
@@ -195,37 +155,35 @@ void UART_get_bytes( uart_module_t module, uint8_t *out_buffer, uint8_t n_bytes 
     }
 }
 
-uint8_t UART_bytes_available( uart_module_t module )
+uint8_t UART_bytes_available( UART_module *module )
 {
     if ( module == NULL )
         return 0;
     
-    return ((UART_module_fd *)module)->n_read_bytes_available;
+    return module->n_read_bytes_available;
 }
 
-void UART_clean_input( uart_module_t module )
+void UART_clean_input( UART_module *module )
 {
-    UART_module_fd *u_module = module;
-    
-    u_module->n_read_bytes_available = 0;
-    u_module->i_read_tail_byte       = u_module->i_read_head_byte;
+    module->n_read_bytes_available = 0;
+    module->i_read_tail_byte       = module->i_read_head_byte;
 }
 
 /**
  * Writing API
  */
 
-void tx_interrupt_handler( volatile UART_module_fd  *u_module )
+void tx_interrupt_handler( volatile UART_module *module )
 {
-    while ( !(*(u_module->reg_status) & UART_STA_BUFFER_FULL_BIT) )
+    while ( !(*(module->reg_status) & UART_STA_BUFFER_FULL_BIT) )
     {
-        if ( u_module->n_write_bytes_available )
+        if ( module->n_write_bytes_available )
         {
-            *u_module->reg_write = u_module->write_buffer[u_module->i_write_tail_byte++];
-            u_module->n_write_bytes_available--;
-            u_module->write_overflow = false;
+            *module->reg_write = module->write_buffer[module->i_write_tail_byte++];
+            module->n_write_bytes_available--;
+            module->write_overflow = false;
         } else {
-            RESET_REG_BIT( *(u_module->reg_interrupt_flag), u_module->interrupt_flag_tx_mask );
+            RESET_REG_BIT( *(module->reg_interrupt_flag), module->interrupt_flag_tx_mask );
             break;
         }
     }
@@ -233,45 +191,41 @@ void tx_interrupt_handler( volatile UART_module_fd  *u_module )
 
 void __attribute__( (__interrupt__, auto_psv) ) _U1TXInterrupt()
 {
-    tx_interrupt_handler( &uart_fd[0] );
+    tx_interrupt_handler( &uart1_ctx );
 }
 
 void __attribute__( (__interrupt__, auto_psv) ) _U2TXInterrupt()
 {
-    tx_interrupt_handler( &uart_fd[1] );
+    tx_interrupt_handler( &uart2_ctx );
 };
 
-void UART_write_byte( uart_module_t module, uint8_t elem )
+void UART_write_byte( UART_module *module, uint8_t elem )
 {
     if ( module == NULL )
         return;
-    
-    UART_module_fd *u_module = module;
-    
-    while ( u_module->write_overflow ) { Nop(); }
-    
-    u_module->write_buffer[u_module->i_write_head_byte++] = elem;
-    u_module->n_write_bytes_available++;
 
-    SET_REG_BIT( *(u_module->reg_interrupt_flag), u_module->interrupt_flag_tx_mask );
+    while ( module->write_overflow ) { Nop(); }
     
-    if ( u_module->n_write_bytes_available == UART_DATA_BUFFER_SIZE )
-        u_module->write_overflow = true;
+    module->write_buffer[module->i_write_head_byte++] = elem;
+    module->n_write_bytes_available++;
+
+    SET_REG_BIT( *(module->reg_interrupt_flag), module->interrupt_flag_tx_mask );
+    
+    if ( module->n_write_bytes_available == UART_DATA_BUFFER_SIZE )
+        module->write_overflow = true;
 }
 
 #define HIGH_16( x ) (((x) >> 8) & 0xff)
 #define LOW_16( x )  ((x) & 0xff)
 
-void UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count )
+void UART_write_words( UART_module *module, uint16_t *arr, uint8_t count )
 {
     if ( module == NULL )
         return;
     
-    UART_module_fd *u_module = module;
-    
-    uint16_t iter = 0;
+    uint16_t iter;
     for ( iter = 0; iter < count; iter++ ) {
-        if ( u_module->write_big_endian_mode )
+        if ( module->write_big_endian_mode )
         {
             UART_write_byte( module, HIGH_16( arr[iter] ) );
             UART_write_byte( module, LOW_16( arr[iter] ) );
@@ -282,9 +236,7 @@ void UART_write_words( uart_module_t module, uint16_t *arr, uint8_t count )
     }
 }
 
-static char send_buffer[UART_DATA_BUFFER_SIZE];
-
-void UART_write_string( uart_module_t module, const char *fstring, ... )
+void UART_write_string( UART_module *module, const char *fstring, ... )
 {
     if ( module == NULL )
         return;
