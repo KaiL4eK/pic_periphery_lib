@@ -51,17 +51,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=main.c ../ADC.c ../UART.c ../flash.c ../spi.c ../timing.c ../twi.c
+SOURCEFILES_QUOTED_IF_SPACED=main.c ../ADC.c ../UART.c ../flash.c ../spi.c ../timing.c ../twi.c ../GPIO.c ../PWM.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/_ext/1472/ADC.o ${OBJECTDIR}/_ext/1472/UART.o ${OBJECTDIR}/_ext/1472/flash.o ${OBJECTDIR}/_ext/1472/spi.o ${OBJECTDIR}/_ext/1472/timing.o ${OBJECTDIR}/_ext/1472/twi.o
-POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/_ext/1472/ADC.o.d ${OBJECTDIR}/_ext/1472/UART.o.d ${OBJECTDIR}/_ext/1472/flash.o.d ${OBJECTDIR}/_ext/1472/spi.o.d ${OBJECTDIR}/_ext/1472/timing.o.d ${OBJECTDIR}/_ext/1472/twi.o.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/main.o ${OBJECTDIR}/_ext/1472/ADC.o ${OBJECTDIR}/_ext/1472/UART.o ${OBJECTDIR}/_ext/1472/flash.o ${OBJECTDIR}/_ext/1472/spi.o ${OBJECTDIR}/_ext/1472/timing.o ${OBJECTDIR}/_ext/1472/twi.o ${OBJECTDIR}/_ext/1472/GPIO.o ${OBJECTDIR}/_ext/1472/PWM.o
+POSSIBLE_DEPFILES=${OBJECTDIR}/main.o.d ${OBJECTDIR}/_ext/1472/ADC.o.d ${OBJECTDIR}/_ext/1472/UART.o.d ${OBJECTDIR}/_ext/1472/flash.o.d ${OBJECTDIR}/_ext/1472/spi.o.d ${OBJECTDIR}/_ext/1472/timing.o.d ${OBJECTDIR}/_ext/1472/twi.o.d ${OBJECTDIR}/_ext/1472/GPIO.o.d ${OBJECTDIR}/_ext/1472/PWM.o.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/_ext/1472/ADC.o ${OBJECTDIR}/_ext/1472/UART.o ${OBJECTDIR}/_ext/1472/flash.o ${OBJECTDIR}/_ext/1472/spi.o ${OBJECTDIR}/_ext/1472/timing.o ${OBJECTDIR}/_ext/1472/twi.o
+OBJECTFILES=${OBJECTDIR}/main.o ${OBJECTDIR}/_ext/1472/ADC.o ${OBJECTDIR}/_ext/1472/UART.o ${OBJECTDIR}/_ext/1472/flash.o ${OBJECTDIR}/_ext/1472/spi.o ${OBJECTDIR}/_ext/1472/timing.o ${OBJECTDIR}/_ext/1472/twi.o ${OBJECTDIR}/_ext/1472/GPIO.o ${OBJECTDIR}/_ext/1472/PWM.o
 
 # Source Files
-SOURCEFILES=main.c ../ADC.c ../UART.c ../flash.c ../spi.c ../timing.c ../twi.c
+SOURCEFILES=main.c ../ADC.c ../UART.c ../flash.c ../spi.c ../timing.c ../twi.c ../GPIO.c ../PWM.c
 
 
 CFLAGS=
@@ -137,6 +137,20 @@ ${OBJECTDIR}/_ext/1472/twi.o: ../twi.c  nbproject/Makefile-${CND_CONF}.mk
 	${MP_CC} $(MP_EXTRA_CC_PRE)  ../twi.c  -o ${OBJECTDIR}/_ext/1472/twi.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/_ext/1472/twi.o.d"      -g -D__DEBUG -D__MPLAB_DEBUGGER_PK3=1    -omf=elf -DXPRJ_default=$(CND_CONF)  -no-legacy-libc  $(COMPARISON_BUILD)  -I"../" -O0 -msmart-io=1 -Wall -msfr-warn=off  
 	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/twi.o.d" $(SILENT)  -rsi ${MP_CC_DIR}../ 
 	
+${OBJECTDIR}/_ext/1472/GPIO.o: ../GPIO.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
+	@${RM} ${OBJECTDIR}/_ext/1472/GPIO.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1472/GPIO.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE)  ../GPIO.c  -o ${OBJECTDIR}/_ext/1472/GPIO.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/_ext/1472/GPIO.o.d"      -g -D__DEBUG -D__MPLAB_DEBUGGER_PK3=1    -omf=elf -DXPRJ_default=$(CND_CONF)  -no-legacy-libc  $(COMPARISON_BUILD)  -I"../" -O0 -msmart-io=1 -Wall -msfr-warn=off  
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/GPIO.o.d" $(SILENT)  -rsi ${MP_CC_DIR}../ 
+	
+${OBJECTDIR}/_ext/1472/PWM.o: ../PWM.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
+	@${RM} ${OBJECTDIR}/_ext/1472/PWM.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1472/PWM.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE)  ../PWM.c  -o ${OBJECTDIR}/_ext/1472/PWM.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/_ext/1472/PWM.o.d"      -g -D__DEBUG -D__MPLAB_DEBUGGER_PK3=1    -omf=elf -DXPRJ_default=$(CND_CONF)  -no-legacy-libc  $(COMPARISON_BUILD)  -I"../" -O0 -msmart-io=1 -Wall -msfr-warn=off  
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/PWM.o.d" $(SILENT)  -rsi ${MP_CC_DIR}../ 
+	
 else
 ${OBJECTDIR}/main.o: main.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}" 
@@ -186,6 +200,20 @@ ${OBJECTDIR}/_ext/1472/twi.o: ../twi.c  nbproject/Makefile-${CND_CONF}.mk
 	@${RM} ${OBJECTDIR}/_ext/1472/twi.o 
 	${MP_CC} $(MP_EXTRA_CC_PRE)  ../twi.c  -o ${OBJECTDIR}/_ext/1472/twi.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/_ext/1472/twi.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)  -no-legacy-libc  $(COMPARISON_BUILD)  -I"../" -O0 -msmart-io=1 -Wall -msfr-warn=off  
 	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/twi.o.d" $(SILENT)  -rsi ${MP_CC_DIR}../ 
+	
+${OBJECTDIR}/_ext/1472/GPIO.o: ../GPIO.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
+	@${RM} ${OBJECTDIR}/_ext/1472/GPIO.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1472/GPIO.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE)  ../GPIO.c  -o ${OBJECTDIR}/_ext/1472/GPIO.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/_ext/1472/GPIO.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)  -no-legacy-libc  $(COMPARISON_BUILD)  -I"../" -O0 -msmart-io=1 -Wall -msfr-warn=off  
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/GPIO.o.d" $(SILENT)  -rsi ${MP_CC_DIR}../ 
+	
+${OBJECTDIR}/_ext/1472/PWM.o: ../PWM.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/_ext/1472" 
+	@${RM} ${OBJECTDIR}/_ext/1472/PWM.o.d 
+	@${RM} ${OBJECTDIR}/_ext/1472/PWM.o 
+	${MP_CC} $(MP_EXTRA_CC_PRE)  ../PWM.c  -o ${OBJECTDIR}/_ext/1472/PWM.o  -c -mcpu=$(MP_PROCESSOR_OPTION)  -MMD -MF "${OBJECTDIR}/_ext/1472/PWM.o.d"        -g -omf=elf -DXPRJ_default=$(CND_CONF)  -no-legacy-libc  $(COMPARISON_BUILD)  -I"../" -O0 -msmart-io=1 -Wall -msfr-warn=off  
+	@${FIXDEPS} "${OBJECTDIR}/_ext/1472/PWM.o.d" $(SILENT)  -rsi ${MP_CC_DIR}../ 
 	
 endif
 
