@@ -3,6 +3,14 @@
 
 #include <xc.h> 
 
+typedef struct {
+    volatile unsigned int *tris;
+    volatile unsigned int *lat;
+    volatile unsigned int *port;
+    
+}GPIO_port_t;
+
+
 extern GPIO_port_t GPIOA;
 extern GPIO_port_t GPIOB;
 extern GPIO_port_t GPIOC;

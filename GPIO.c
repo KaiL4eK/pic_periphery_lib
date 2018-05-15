@@ -2,12 +2,6 @@
 
 #include "GPIO.h"
 
-typedef struct {
-    volatile unsigned int *tris;
-    volatile unsigned int *lat;
-    volatile unsigned int *port;
-    
-}GPIO_port_t;
 
 GPIO_port_t GPIOA = { .tris = &TRISA, .lat = &LATA, .port = &PORTA };
 GPIO_port_t GPIOB = { .tris = &TRISB, .lat = &LATB, .port = &PORTB };
